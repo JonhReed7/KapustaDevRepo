@@ -36,7 +36,12 @@ async def start_survey(
     if poll is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Poll not found or not available",
+            detail="Poll not found",
+        )
+    if poll.status != "active":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Poll is not accepting responses",
         )
     response = await resp_svc.start_response(db, poll)
     return StartResponse(poll_response_id=response.id)
@@ -52,7 +57,12 @@ async def submit_responses(
     if poll is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Poll not found or not available",
+            detail="Poll not found",
+        )
+    if poll.status != "active":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Poll is not accepting responses",
         )
     try:
         response, completed = await resp_svc.submit_answers(

@@ -13,7 +13,7 @@ async def get_poll_for_taking(db: AsyncSession, public_slug: str) -> Poll | None
     result = await db.execute(
         select(Poll)
         .options(selectinload(Poll.questions).selectinload(Question.options))
-        .where(Poll.public_slug == public_slug, Poll.status == "active")
+        .where(Poll.public_slug == public_slug)
     )
     return result.scalar_one_or_none()
 

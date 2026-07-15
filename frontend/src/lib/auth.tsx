@@ -12,6 +12,7 @@ import {
 interface AuthContextValue {
   user: User | null
   token: string | null
+  loading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
   logout: () => void
@@ -21,7 +22,10 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [token, setTokenState] = useState<string | null>(null)
+  const [token, setTokenState] = useState<string | null>(() => {
+    try { return localStorage.getItem('kapusta_token') } catch { return null }
+  })
+  const [loading, setLoading] = useState(true)
 
   const logout = useCallback(() => {
     setUser(null)
@@ -33,6 +37,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOnUnauthorized(logout)
   }, [logout])
 
+  // Restore session on mount
+  useEffect(() => {
+    if (!token) {
+      setLoading(false)
+      return
+    }
+    setToken(token)
+    getCurrentUser()
+      .then(setUser)
+      .catch(() => {
+        setUser(null)
+        setTokenState(null)
+        clearToken()
+      })
+      .finally(() => setLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const login = useCallback(async (email: string, password: string) => {
     const data = await apiLogin(email, password)
     setTokenState(data.access_token)
@@ -42,16 +64,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const register = useCallback(async (email: string, password: string, name: string) => {
-    await apiRegister(email, password)
+    await apiRegister(email, password, name)
     const data = await apiLogin(email, password)
     setTokenState(data.access_token)
     setToken(data.access_token)
     const me = await getCurrentUser()
-    setUser({ ...me, name })
+    setUser(me)
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )

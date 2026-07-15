@@ -1,10 +1,12 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
+const TOKEN_KEY = "kapusta_token";
 
-let token: string | null = null;
+let token: string | null = localStorage.getItem(TOKEN_KEY);
 let onUnauthorized: (() => void) | null = null;
 
 export function setToken(newToken: string) {
   token = newToken;
+  localStorage.setItem(TOKEN_KEY, newToken);
 }
 
 export function getToken(): string | null {
@@ -13,6 +15,7 @@ export function getToken(): string | null {
 
 export function clearToken() {
   token = null;
+  localStorage.removeItem(TOKEN_KEY);
 }
 
 export function setOnUnauthorized(callback: () => void) {
@@ -89,20 +92,20 @@ export interface AuthResponse {
 }
 
 export interface User {
-  id: string;
+  id: number;
   email: string;
-  name: string;
+  name?: string;
 }
 
 export async function register(
   email: string,
   password: string,
-): Promise<AuthResponse> {
-  const data = await request("POST", "/auth/register", {
-    body: { email, password },
+  name?: string,
+): Promise<User> {
+  return request("POST", "/auth/register", {
+    body: { email, password, name },
     auth: false,
-  });
-  return data as AuthResponse;
+  }) as Promise<User>;
 }
 
 export async function login(
@@ -126,22 +129,36 @@ export async function getCurrentUser(): Promise<User> {
 
 export type PollStatus = "draft" | "active" | "closed";
 
+export interface PollOption {
+  id: number;
+  label: string;
+}
+
+export interface PollQuestion {
+  id: number;
+  prompt: string;
+  type: "single" | "multiple" | "rating" | "open_text";
+  options: PollOption[];
+  scale?: number;
+}
+
 export interface Poll {
-  id: string;
+  id: number;
   title: string;
   description?: string;
   status: PollStatus;
   created_at: string;
   updated_at?: string;
-  response_count: number;
+  responses?: number;
   public_slug?: string;
+  questions?: PollQuestion[];
 }
 
 export async function getMyPolls(): Promise<Poll[]> {
   return request("GET", "/polls") as Promise<Poll[]>;
 }
 
-export async function getPoll(id: string): Promise<Poll> {
+export async function getPoll(id: number): Promise<Poll> {
   return request("GET", `/polls/${id}`) as Promise<Poll>;
 }
 
@@ -151,53 +168,149 @@ export async function createPollFromTemplate(
   return request("POST", `/polls/from-template/${templateKey}`) as Promise<Poll>;
 }
 
+export interface QuestionPayload {
+  prompt: string;
+  type: string;
+  options: { label: string }[];
+  scale?: number;
+  sort_order: number;
+}
+
+export async function createPoll(
+  title: string,
+  description?: string,
+  questions: QuestionPayload[] = [],
+): Promise<Poll> {
+  return request("POST", "/polls", {
+    body: { title, description, questions },
+  }) as Promise<Poll>;
+}
+
 export async function updatePoll(
-  id: string,
-  data: Partial<Pick<Poll, "title" | "description">>,
+  id: number,
+  data: Partial<Pick<Poll, "title" | "description">> & { questions?: QuestionPayload[] },
 ): Promise<Poll> {
   return request("PATCH", `/polls/${id}`, { body: data }) as Promise<Poll>;
 }
 
-export async function publishPoll(id: string): Promise<Poll> {
+export async function publishPoll(id: number): Promise<Poll> {
   return request("POST", `/polls/${id}/publish`) as Promise<Poll>;
 }
 
-export async function closePoll(id: string): Promise<Poll> {
+export async function closePoll(id: number): Promise<Poll> {
   return request("POST", `/polls/${id}/close`) as Promise<Poll>;
 }
 
-export async function getPollEngagement(id: string): Promise<unknown> {
-  return request("GET", `/polls/${id}/engagement`);
+export interface EngagementData {
+  engagement_index: number;
+  total_started: number;
+  total_completed: number;
+  completion_rate: number;
+  avg_completion_seconds: number | null;
+  avg_time_per_question_seconds: number | null;
+}
+
+export async function getPollEngagement(id: number): Promise<EngagementData> {
+  return request("GET", `/polls/${id}/engagement`) as Promise<EngagementData>;
+}
+
+export interface ExportResult {
+  blob: Blob;
+  filename: string;
 }
 
 export async function exportPollResults(
-  id: string,
+  id: number,
   format = "csv",
-): Promise<Blob | unknown> {
-  return request("GET", `/polls/${id}/export?format=${format}`, {
+): Promise<ExportResult> {
+  const res = await request("GET", `/polls/${id}/export?format=${format}`, {
     json: false,
-  });
+  }) as Response;
+
+  const disposition = res.headers.get("content-disposition") || "";
+  const match = disposition.match(/filename="?([^";\n]+)"?/);
+  const ext = format === "xlsx" ? "xlsx" : "csv";
+  const filename = match?.[1] || `poll-results.${ext}`;
+
+  const blob = await res.blob();
+  return { blob, filename };
 }
 
 // --- Public (no auth) ---
 
-export async function getPublicPoll(publicSlug: string): Promise<unknown> {
-  return request("GET", `/take/${publicSlug}`, { auth: false });
+export interface PublicPollOption {
+  id: number;
+  label: string;
+}
+
+export interface PublicPollQuestion {
+  id: number;
+  prompt: string;
+  type: "single" | "multiple" | "rating" | "open_text";
+  scale?: number;
+  options: PublicPollOption[];
+}
+
+export interface PublicPoll {
+  title: string;
+  description?: string;
+  status: "active" | "closed";
+  questions: PublicPollQuestion[];
+}
+
+export async function getPublicPoll(publicSlug: string): Promise<PublicPoll> {
+  return request("GET", `/take/${publicSlug}`, { auth: false }) as Promise<PublicPoll>;
 }
 
 export async function startPublicResponse(
   publicSlug: string,
-): Promise<unknown> {
-  return request("POST", `/take/${publicSlug}/start`, { auth: false });
+): Promise<{ poll_response_id: number }> {
+  return request("POST", `/take/${publicSlug}/start`, { auth: false }) as Promise<{
+    poll_response_id: number;
+  }>;
+}
+
+export interface AnswerPayload {
+  question_id: number;
+  option_id?: number;
+  rating_value?: number;
+  text_value?: string;
 }
 
 export async function submitPublicResponse(
   publicSlug: string,
-  pollResponseId: string,
-  answers: unknown[],
+  pollResponseId: number,
+  answers: AnswerPayload[],
 ): Promise<unknown> {
   return request("POST", `/take/${publicSlug}/responses`, {
     body: { poll_response_id: pollResponseId, answers },
     auth: false,
   });
+}
+
+// --- Results ---
+
+export interface ResultOption {
+  label: string;
+  votes: number;
+}
+
+export interface ResultQuestionData {
+  id: number;
+  prompt: string;
+  type: string;
+  options?: ResultOption[];
+  average?: number;
+  scale?: number;
+  texts?: string[];
+}
+
+export interface PollResults {
+  title: string;
+  total_responses: number;
+  questions: ResultQuestionData[];
+}
+
+export async function getPollResults(id: number): Promise<PollResults> {
+  return request("GET", `/polls/${id}/results`) as Promise<PollResults>;
 }

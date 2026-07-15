@@ -15,6 +15,7 @@ class TakeQuestion(BaseModel):
     prompt: str
     type: str
     sort_order: int
+    scale: Optional[int] = None
     options: list[TakeOption] = []
 
     model_config = {"from_attributes": True}
@@ -23,6 +24,7 @@ class TakeQuestion(BaseModel):
 class TakeSurveyResponse(BaseModel):
     title: str
     description: Optional[str] = None
+    status: str
     questions: list[TakeQuestion] = []
 
     model_config = {"from_attributes": True}

@@ -112,6 +112,7 @@ export const sampleResult: SurveyResult = {
 export interface SurveyQuestion {
   id: string
   prompt: string
+  type: 'single' | 'multiple' | 'rating' | 'open_text'
   options: string[]
 }
 
@@ -121,17 +122,26 @@ export const takingSurvey = {
     {
       id: 't1',
       prompt: 'Сколько дней в неделю вы бы хотели работать удалённо?',
+      type: 'single' as const,
       options: ['0–1 день', '2–3 дня', '4 дня', 'Полностью удалённо'],
     },
     {
       id: 't2',
       prompt: 'Что важно для вашей идеальной рабочей среды?',
+      type: 'multiple' as const,
       options: ['Гибкий график', 'Тихое время для концентрации', 'Очное взаимодействие', 'Короче дорога до офиса'],
     },
     {
       id: 't3',
-      prompt: 'Какие инструменты помогают вам быть максимально продуктивным?',
-      options: ['Асинхронные сообщения', 'Видеозвонки', 'Общие документы', 'Канбан-доски'],
+      prompt: 'Как вы оцениваете удобство работы из дома?',
+      type: 'rating' as const,
+      options: [],
+    },
+    {
+      id: 't4',
+      prompt: 'Есть ли у вас дополнительные комментарии по удалённой работе?',
+      type: 'open_text' as const,
+      options: [],
     },
   ] satisfies SurveyQuestion[],
 }

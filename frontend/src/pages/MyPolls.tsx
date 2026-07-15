@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { CalendarDays, FileText, Inbox, Plus } from 'lucide-react'
+import { CalendarDays, FileText, Inbox, Plus, SquareCheck } from 'lucide-react'
 import { Badge, Button, Card } from '@/components/kit'
 import { Logo } from '@/components/logo'
 import { useAuth } from '@/lib/auth'
-import { getMyPolls, type Poll, type PollStatus } from '@/api/client'
+import { getMyPolls, closePoll, type Poll, type PollStatus } from '@/api/client'
 
 type FilterStatus = PollStatus | 'all'
 
@@ -68,6 +68,22 @@ export default function MyPolls() {
     return () => { cancelled = true }
   }, [])
 
+  const [closingId, setClosingId] = useState<number | null>(null)
+
+  const handleClose = useCallback(async (pollId: number) => {
+    setClosingId(pollId)
+    try {
+      await closePoll(pollId)
+      setPolls((prev) =>
+        prev.map((p) => (p.id === pollId ? { ...p, status: 'closed' as PollStatus } : p)),
+      )
+    } catch {
+      // silently ignore — poll may already be closed
+    } finally {
+      setClosingId(null)
+    }
+  }, [])
+
   const filtered = filter === 'all' ? polls : polls.filter((p) => p.status === filter)
 
   const counts = {
@@ -83,9 +99,6 @@ export default function MyPolls() {
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
           <Logo />
           <nav className="flex items-center gap-2">
-            <Link to="/results">
-              <Button variant="ghost" size="sm">Результаты</Button>
-            </Link>
             <Button variant="ghost" size="sm" onClick={logout}>Выйти</Button>
             <span className="ml-1 flex size-8 items-center justify-center rounded-full bg-accent text-sm font-medium text-accent-foreground">
               {initials}
@@ -163,7 +176,7 @@ export default function MyPolls() {
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((poll) => (
-              <Link key={poll.id} to={`/results`} className="group">
+              <Link key={poll.id} to={`/results/${poll.id}`} className="group">
                 <Card className="flex h-full flex-col p-6 transition-colors group-hover:border-primary/30">
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="text-base font-medium leading-snug text-foreground">
@@ -174,13 +187,28 @@ export default function MyPolls() {
                   <div className="mt-6 flex items-center gap-5 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
                       <FileText className="size-4" />
-                      {poll.response_count} ответов
+                      {poll.responses} ответов
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <CalendarDays className="size-4" />
                       {formatDate(poll.created_at)}
                     </span>
                   </div>
+                  {poll.status === 'active' && (
+                    <button
+                      type="button"
+                      disabled={closingId === poll.id}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleClose(poll.id)
+                      }}
+                      className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+                    >
+                      <SquareCheck className="size-3.5" />
+                      {closingId === poll.id ? 'Завершение…' : 'Завершить'}
+                    </button>
+                  )}
                 </Card>
               </Link>
             ))}

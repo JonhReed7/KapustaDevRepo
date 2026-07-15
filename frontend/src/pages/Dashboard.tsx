@@ -3,6 +3,7 @@ import { CalendarDays, FileText, Inbox, Plus } from 'lucide-react'
 import { Badge, Button, Card } from '@/components/kit'
 import { Logo } from '@/components/logo'
 import { surveys, type SurveyStatus } from '@/lib/data'
+import { useAuth } from '@/lib/auth'
 
 const statusTone: Record<SurveyStatus, 'muted' | 'accent' | 'success'> = {
   'Черновик': 'muted',
@@ -13,6 +14,11 @@ const statusTone: Record<SurveyStatus, 'muted' | 'accent' | 'success'> = {
 const showEmpty = false
 
 export default function Dashboard() {
+  const { user, logout } = useAuth()
+  const initials = user?.name
+    ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    : '??'
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/60 bg-background">
@@ -24,8 +30,11 @@ export default function Dashboard() {
                 Результаты
               </Button>
             </Link>
+            <Button variant="ghost" size="sm" onClick={logout}>
+              Выйти
+            </Button>
             <span className="ml-1 flex size-8 items-center justify-center rounded-full bg-accent text-sm font-medium text-accent-foreground">
-              JD
+              {initials}
             </span>
           </nav>
         </div>

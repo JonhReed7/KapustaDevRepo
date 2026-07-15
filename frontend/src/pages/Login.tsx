@@ -1,10 +1,39 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button, Card, Field, Input } from '@/components/kit'
 import { Logo } from '@/components/logo'
+import { useAuth } from '@/lib/auth'
 
 export default function Login() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const { login, register } = useAuth()
+  const navigate = useNavigate()
   const isSignup = mode === 'signup'
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      if (isSignup) {
+        await register(email, password, name)
+      } else {
+        await login(email, password)
+      }
+      navigate('/my-polls')
+    } catch {
+      setError('Что-то пошло не так. Попробуйте ещё раз.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -26,28 +55,46 @@ export default function Login() {
           </div>
 
           <Card className="p-6">
-            <form
-              className="flex flex-col gap-4"
-              onSubmit={(e) => e.preventDefault()}
-            >
+            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
               {isSignup && (
                 <Field label="Имя" htmlFor="name">
-                  <Input id="name" name="name" type="text" placeholder="Иван Иванов" />
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Иван Иванов"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
                 </Field>
               )}
               <Field label="Электронная почта" htmlFor="email">
-                <Input id="email" name="email" type="email" placeholder="you@example.com" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </Field>
               <Field label="Пароль" htmlFor="password">
                 <Input
                   id="password"
-                  name="password"
                   type="password"
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
               </Field>
-              <Button type="submit" className="mt-1 w-full">
-                {isSignup ? 'Создать аккаунт' : 'Войти'}
+
+              {error && (
+                <p className="text-sm text-destructive">{error}</p>
+              )}
+
+              <Button type="submit" className="mt-1 w-full" disabled={loading}>
+                {loading ? 'Загрузка…' : isSignup ? 'Создать аккаунт' : 'Войти'}
               </Button>
             </form>
 
@@ -66,7 +113,10 @@ export default function Login() {
             {isSignup ? 'Уже есть аккаунт?' : 'Нет аккаунта?'}{' '}
             <button
               type="button"
-              onClick={() => setMode(isSignup ? 'signin' : 'signup')}
+              onClick={() => {
+                setMode(isSignup ? 'signin' : 'signup')
+                setError('')
+              }}
               className="font-medium text-primary transition-colors hover:text-primary/80"
             >
               {isSignup ? 'Войти' : 'Зарегистрироваться'}

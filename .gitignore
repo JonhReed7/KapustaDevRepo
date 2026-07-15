@@ -1,5 +1,57 @@
+# Dependencies
 node_modules/
+.pnp.*
+
+# Build output
 dist/
+build/
+.next/
+.nuxt/
+
+# Environment files
 .env
 .env*.local
+.env.production
+.env.development
+.env.staging
+
+# OS files
 .DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime
+coverage/
+*.lcov
+
+# MiMoCode service files
+.mimocode/
+
+# Markdown documentation (not needed for deployment)
+*.md
+!README.md
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+*.egg

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { BarChart3, ClipboardList, ExternalLink, Vote } from 'lucide-react'
+import { BarChart3, ClipboardList, Vote } from 'lucide-react'
 import { Button, Card } from '@/components/kit'
 import { Navbar } from '@/components/navbar'
 import { Logo } from '@/components/logo'
@@ -66,41 +66,40 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Examples */}
+        {/* How it works */}
         <section id="examples" className="mx-auto w-full max-w-6xl px-6 pb-24 scroll-mt-20">
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Примеры</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Как это работает</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Попробуйте пройти опрос или посмотреть результаты — всё работает прямо сейчас.
+            Три простых шага от создания опроса до анализа результатов.
           </p>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <Link to="/take" className="group">
-              <Card className="flex h-full flex-col p-6 transition-colors group-hover:border-primary/30">
-                <span className="flex size-11 items-center justify-center rounded-md bg-accent text-accent-foreground">
-                  <ClipboardList className="size-5" />
-                </span>
-                <h3 className="mt-5 text-lg font-medium text-foreground">Пройти опрос</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Многоступенчатый опрос с выбором вариантов и прогресс-баром.
-                </p>
-                <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                  Открыть <ExternalLink className="size-3.5" />
-                </span>
-              </Card>
-            </Link>
-            <Link to="/results" className="group">
-              <Card className="flex h-full flex-col p-6 transition-colors group-hover:border-primary/30">
-                <span className="flex size-11 items-center justify-center rounded-md bg-accent text-accent-foreground">
-                  <BarChart3 className="size-5" />
-                </span>
-                <h3 className="mt-5 text-lg font-medium text-foreground">Результаты опроса</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Диаграммы, проценты и средние оценки — наглядный анализ ответов.
-                </p>
-                <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                  Открыть <ExternalLink className="size-3.5" />
-                </span>
-              </Card>
-            </Link>
+          <div className="mt-6 grid gap-5 sm:grid-cols-3">
+            <Card className="p-7">
+              <span className="flex size-11 items-center justify-center rounded-md bg-accent text-accent-foreground text-lg font-semibold text-primary">
+                1
+              </span>
+              <h3 className="mt-5 text-lg font-medium text-foreground">Создайте опрос</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Используйте шаблон или создайте опрос с нуля с вопросами разных типов.
+              </p>
+            </Card>
+            <Card className="p-7">
+              <span className="flex size-11 items-center justify-center rounded-md bg-accent text-accent-foreground text-lg font-semibold text-primary">
+                2
+              </span>
+              <h3 className="mt-5 text-lg font-medium text-foreground">Поделитесь ссылкой</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Опубликуйте опрос и отправьте уникальную ссылку участникам.
+              </p>
+            </Card>
+            <Card className="p-7">
+              <span className="flex size-11 items-center justify-center rounded-md bg-accent text-accent-foreground text-lg font-semibold text-primary">
+                3
+              </span>
+              <h3 className="mt-5 text-lg font-medium text-foreground">Анализируйте</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Диаграммы, средние оценки и индекс вовлечённости — всё наглядно.
+              </p>
+            </Card>
           </div>
         </section>
       </main>

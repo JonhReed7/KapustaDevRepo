@@ -176,7 +176,7 @@ export default function MyPolls() {
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((poll) => (
-              <Link key={poll.id} to={`/results/${poll.id}`} className="group">
+              <Link key={poll.id} to={poll.status === 'draft' ? `/surveys/${poll.id}/edit` : `/results/${poll.id}`} className="group">
                 <Card className="flex h-full flex-col p-6 transition-colors group-hover:border-primary/30">
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="text-base font-medium leading-snug text-foreground">

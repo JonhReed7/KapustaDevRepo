@@ -27,7 +27,11 @@ export default function TakeSurvey() {
   const startedAtRef = useRef<string>(new Date().toISOString())
 
   useEffect(() => {
-    if (!publicSlug) return
+    if (!publicSlug) {
+      setError('Опрос не найден')
+      setLoading(false)
+      return
+    }
     setLoading(true)
     getPublicPoll(publicSlug)
       .then((data) => {

@@ -244,14 +244,22 @@ export default function Results() {
                   <span className="text-5xl font-semibold tabular-nums text-foreground">
                     {Math.round(engagement.engagement_index * 100)}%
                   </span>
-                  <span className="text-sm text-muted-foreground">завершили опрос</span>
+                  <span className="text-sm text-muted-foreground">индекс вовлечённости</span>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
                   <span>
-                    Начали: <span className="tabular-nums text-foreground">{engagement.total_started}</span>
+                    Начали:{' '}
+                    <span className="tabular-nums text-foreground">{engagement.total_started}</span>
                   </span>
                   <span>
-                    Завершили: <span className="tabular-nums text-foreground">{engagement.total_completed}</span>
+                    Завершили:{' '}
+                    <span className="tabular-nums text-foreground">{engagement.total_completed}</span>
+                  </span>
+                  <span>
+                    Доля завершивших:{' '}
+                    <span className="tabular-nums text-foreground">
+                      {Math.round(engagement.completion_rate * 100)}%
+                    </span>
                   </span>
                   {engagement.avg_completion_seconds != null && (
                     <span>

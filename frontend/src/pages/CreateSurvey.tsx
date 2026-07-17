@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { GripVertical, Plus, Trash2, X, Copy, Check, Loader2 } from 'lucide-react'
 import { Button, Card, Field, Input, Select, Textarea } from '@/components/kit'
@@ -50,6 +50,7 @@ function toQuestionPayload(q: QuestionDraft, index: number): QuestionPayload {
 
 export default function CreateSurvey() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const pollId = id ? Number(id) : null
   const [questions, setQuestions] = useState<QuestionDraft[]>(() => [makeQuestion()])
   const [title, setTitle] = useState('')
@@ -138,7 +139,8 @@ export default function CreateSurvey() {
       if (pollId) {
         await updatePoll(pollId, { title: title.trim(), description: description.trim() || undefined, questions: payloads })
       } else {
-        await createPoll(title.trim(), description.trim() || undefined, payloads)
+        const poll = await createPoll(title.trim(), description.trim() || undefined, payloads)
+        navigate(`/surveys/${poll.id}/edit`, { replace: true })
       }
       setSuccess('Черновик сохранён')
     } catch (err) {
@@ -169,6 +171,7 @@ export default function CreateSurvey() {
       } else {
         const poll = await createPoll(title.trim(), description.trim() || undefined, payloads)
         pollIdToPublish = poll.id
+        navigate(`/surveys/${poll.id}/edit`, { replace: true })
       }
       const published = await publishPoll(pollIdToPublish)
       setPublicSlug(published.public_slug!)

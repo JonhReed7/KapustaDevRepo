@@ -22,14 +22,14 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [token, setTokenState] = useState<string | null>(() => {
+  const [authToken, setAuthToken] = useState<string | null>(() => {
     try { return localStorage.getItem('kapusta_token') } catch { return null }
   })
   const [loading, setLoading] = useState(true)
 
   const logout = useCallback(() => {
     setUser(null)
-    setTokenState(null)
+    setAuthToken(null)
     clearToken()
   }, [])
 
@@ -39,16 +39,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Restore session on mount
   useEffect(() => {
-    if (!token) {
+    if (!authToken) {
       setLoading(false)
       return
     }
-    setToken(token)
+    setToken(authToken)
     getCurrentUser()
       .then(setUser)
       .catch(() => {
         setUser(null)
-        setTokenState(null)
+        setAuthToken(null)
         clearToken()
       })
       .finally(() => setLoading(false))
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const data = await apiLogin(email, password)
-    setTokenState(data.access_token)
+    setAuthToken(data.access_token)
     setToken(data.access_token)
     const me = await getCurrentUser()
     setUser(me)
@@ -66,14 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(async (email: string, password: string, name: string) => {
     await apiRegister(email, password, name)
     const data = await apiLogin(email, password)
-    setTokenState(data.access_token)
+    setAuthToken(data.access_token)
     setToken(data.access_token)
     const me = await getCurrentUser()
     setUser(me)
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token: authToken, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )

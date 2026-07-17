@@ -41,9 +41,8 @@ DB_HOST=db
 DB_PORT=5432
 EOF
 
-# --- Настройка nginx и caddy ---
+# --- Настройка nginx ---
 sed -i "s/<DOMAIN>/$DOMAIN/g" deploy/nginx.conf
-sed -i "s/<DOMAIN>/$DOMAIN/g" deploy/caddy/Caddyfile
 
 # --- Директории для certbot ---
 mkdir -p deploy/certbot/conf deploy/certbot/www
@@ -52,7 +51,6 @@ echo ""
 echo "Готово! Настроено:"
 echo "  .env          — создан с автоматически сгенерированными секретами"
 echo "  nginx.conf    — домен $DOMAIN подставлен"
-echo "  Caddyfile     — домен $DOMAIN подставлен"
 echo "  certbot/      — директории созданы"
 echo ""
 echo "Далее:"
